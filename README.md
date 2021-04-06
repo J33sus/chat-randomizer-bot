@@ -8,5 +8,5 @@ A chat randomizer to talk to strangers on Telegram made with Nodejs.
 * Done!
 
 ### Images
-* [Example (English)](https://github.com/J33sus/chat-randomizer-bot/blob/master/images/image_1.png)
-* [Example (Español)](https://github.com/J33sus/chat-randomizer-bot/blob/master/images/image_2.png)
+* [Example (English)](https://github.com/J33sus/chat-randomizer-bot/blob/master/images/image_2.png)
+* [Example (Español)](https://github.com/J33sus/chat-randomizer-bot/blob/master/images/image_1.png)
