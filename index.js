@@ -41,10 +41,7 @@ bot.on('message', async (msg) => {
 				partner.setState(UserStats.STATE_PAUSED);
 				await bot.sendMessage(partner.getId(), 'Tu compañero ha detenido la charla.\nEscribe /search para encontrar un nuevo compañero.');
 
-				console.log(userManager.get(user_id))
 				user.setState(UserStats.STATE_PAUSED);
-				console.log(userManager.get(user_id))
-
 				await bot.sendMessage(user_id, 'Has detenido la charla.\nEscribe /search para encontrar un nuevo compañero.');
 				break;
 			default: break;	
@@ -88,8 +85,6 @@ bot.on('message', async (msg) => {
 		const user = userManager.get(user_id);
 
 		if(user.getState() == UserStats.STATE_CHATTING) {
-			console.log(msg);
-			
 			if(msg.document) {
 				bot.sendMessage(user_id, '¡No puede enviar archivos!');
 			}
