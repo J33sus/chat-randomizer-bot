@@ -1,6 +1,7 @@
 const User = require('./User.js');
 const UserStats = require('./UserStates.js');
 const Database = require('./Database.js')();
+const Language = require(`../languages/lang_${process.env.BOT_LANG}.js`);
 
 class UserManager {
 	constructor() {
@@ -41,7 +42,7 @@ class UserManager {
 			user.setState(UserStats.STATE_WAITING);
 
 			// Find partner
-			await bot.sendMessage(user_id, 'Buscando un compañero...');
+			await bot.sendMessage(user_id, Language.SEARCHING_PARTNER_MSG);
 
 			const partner = this.findPartner(user_id);
 			if(partner == undefined) return;
@@ -52,11 +53,12 @@ class UserManager {
 			partner.setPartner(user_id);
 			user.setPartner(partner.getId());
 
-			await bot.sendMessage(user_id, '¡Compañero encontrado!\n\nEscribe /stop para detener la charla con tu nuevo compañero.');
-			await bot.sendMessage(partner.getId(), '¡Compañero encontrado!\n\nEscribe /stop para detener la charla con tu nuevo compañero.');
+			await bot.sendMessage(user_id, Language.PARTNER_FOUND_MSG, {parse_mode: 'Markdown'});
+			await bot.sendMessage(partner.getId(), Language.PARTNER_FOUND_MSG, {parse_mode: 'Markdown'});
 		}
-		else if(user.getState() == UserStats.STATE_CHATTING)
-			bot.sendMessage(user_id, '¡Ya estás en una charla!');
+		else if(user.getState() == UserStats.STATE_CHATTING) {
+			bot.sendMessage(user_id, Language.ERROR_CHATTING, {parse_mode: 'Markdown'});
+		}
 	}
 };
 module.exports = UserManager;

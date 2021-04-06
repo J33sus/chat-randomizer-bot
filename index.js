@@ -6,6 +6,7 @@ const Config = {
 	token: process.env.BOT_TOKEN,
 	download_dir: './images',
 };
+const Language = require(`./languages/lang_${process.env.BOT_LANG}.js`);
 const UserStats = require('./core/UserStates.js');
 
 // Telegram bot
@@ -21,7 +22,7 @@ bot.on('message', async (msg) => {
 		if(!userManager.exists(user_id)) {
 			userManager.add(user_id);
 
-			return bot.sendMessage(user_id, '*|_CHAT RANDOMIZER BOT_|*\nEl chat donde podrás interactuar con extranjeros de todo el mundo de forma anonima.\n\nEscriba /search para encontrar un nuevo compañero.', {parse_mode : "Markdown"});
+			return bot.sendMessage(user_id, `${Language.BOT_NAME}\n${Language.START_MSG}\n\n${Language.FIND_PARTNER_MSG}`, {parse_mode : 'Markdown'});
 		}
 		else return userManager.start(bot, user_id);
 	}
@@ -29,20 +30,20 @@ bot.on('message', async (msg) => {
 		const user = userManager.get(user_id);
 		switch(user.getState()) {
 			case UserStats.STATE_PAUSED:
-				bot.sendMessage(user_id, 'No estás en ninguna charla.\nEscribe /search para encontrar un compañero.');
+				bot.sendMessage(user_id, `${Language.ERRROR_WITHOUT_PARTNER}\n${Language.FIND_PARTNER_MSG}`, {parse_mode: 'Markdown'});
 				break;
 			case UserStats.STATE_WAITING:
 				user.setState(UserStats.STATE_PAUSED);
-				bot.sendMessage(user_id, 'Has detenido la busqueda de compañero.\nEscribe /search para encontrar un compañero.');
+				bot.sendMessage(user_id, `${Language.STOPPED_SEARCH_MSG}\n${Language.FIND_PARTNER_MSG}`, {parse_mode: 'Markdown'});
 				break;
 			case UserStats.STATE_CHATTING:
 				const partner = userManager.get(user.getPartner());
 
 				partner.setState(UserStats.STATE_PAUSED);
-				await bot.sendMessage(partner.getId(), 'Tu compañero ha detenido la charla.\nEscribe /search para encontrar un nuevo compañero.');
+				await bot.sendMessage(partner.getId(), `${Language.STOPPED_CHAT_PARTNER_MSG}\n${Language.FIND_PARTNER_MSG}`, {parse_mode: 'Markdown'});
 
 				user.setState(UserStats.STATE_PAUSED);
-				await bot.sendMessage(user_id, 'Has detenido la charla.\nEscribe /search para encontrar un nuevo compañero.');
+				await bot.sendMessage(user_id, `${Language.STOPPED_CHAT_MSG}\n${Language.FIND_PARTNER_MSG}`, {parse_mode: 'Markdown'});
 				break;
 			default: break;	
 		}
@@ -51,34 +52,34 @@ bot.on('message', async (msg) => {
 	else if(/\/next/.test(msg.text) && userManager.exists(user_id)) {
 		const user = userManager.get(user_id);
 		if(user.getState() == UserStats.STATE_WAITING) {
-			return bot.sendMessage(user_id, 'Ya estás esperando por un compañero.\nEscribe /stop para cancelar la busqueda de tu compañero.');
+			return bot.sendMessage(user_id, `${Language.ERROR_WAITING_PARTNER}\n${Language.STOP_PARTNET_SEARCH_MSG}`, {parse_mode: 'Markdown'});
 		}
 		else if(user.getState() == UserStats.STATE_PAUSED || user.getState() == UserStats.STATE_CHATTING) {
 			if(user.getState() == UserStats.STATE_CHATTING) {
 				const partner = userManager.get(user.getPartner());
 
 				partner.setState(UserStats.STATE_PAUSED);
-				await bot.sendMessage(partner.getId(), 'Tu compañero ha detenido la charla.\nEscribe /search para encontrar un nuevo compañero.');
+				await bot.sendMessage(partner.getId(), `${Language.STOPPED_CHAT_PARTNER_MSG}\n${Language.FIND_PARTNER_MSG}`, {parse_mode: 'Markdown'});
 			}
 			user.setState(UserStats.STATE_PAUSED);
-			await bot.sendMessage(user_id, 'Has detenido la charla para buscar un nuevo compañero.\nEscribe /stop para cancerlar la busqueda de un nuevo compañero.');
+			await bot.sendMessage(user_id, `${Language.FIND_NEW_PARTNER_MSG}\n${Language.STOP_PARTNET_SEARCH_MSG}`, {parse_mode: 'Markdown'});
 			await userManager.start(bot, user_id);
 			return;
 		}
-		else return bot.sendMessage(user_id, 'No estás en ninguna charla.\nEscribe /search para encontrar un nuevo compañero.');
+		else return bot.sendMessage(user_id, `${Language.ERRROR_WITHOUT_PARTNER}\n${Language.FIND_PARTNER_MSG}`, {parse_mode: 'Markdown'});
 	}
 	else if(/^\/help/.test(msg.text)) {
-		await bot.sendMessage(user_id, '*|_CHAT RANDOMIZER BOT_|*\nEste bot es para chatear con desconocidos en Telegram.\n\nEl bot puede enviar mensajes, links, gifs, stickers, fotos y audio.', {parse_mode: 'Markdown'});
-		await bot.sendMessage(user_id, '/search - encontrar un compañero.\n/next - terminar la charla y busca un nuevo compañero.\n/stop - detener la charla.\n/share - compartir tu enlace de perfil a tu compañero.\n\nSi tienes alguna duda, puedes contactar al soporte (@j33sus).')
+		await bot.sendMessage(user_id, `${Language.BOT_NAME}\n${Language.HELP_MSG}`, {parse_mode: 'Markdown'});
+		await bot.sendMessage(user_id, Language.COMMANDS_INFO_MSG, {parse_mode: 'Markdown'});
 		return;
 	}
 	else if(/^\/share/.test(msg.text)) {
 		const user = userManager.get(user_id);
 		if(user.getState() == UserStats.STATE_CHATTING) {
-			await bot.sendMessage(user.getPartner(), `*CONTACTO COMPARTIDO:* @${msg.from.username}`, {parse_mode: 'Markdown'});
-			return bot.sendMessage(user_id, '¡Perfil enviado!');
+			await bot.sendMessage(user.getPartner(), Language.SHARE_CONTACT_MSG.replace('{0}', `@${msg.from.username}`), {parse_mode: 'Markdown'});
+			return bot.sendMessage(user_id, Language.SHARED_CONTACT_MSG, {parse_mode: 'Markdown'});
 		}
-		else return bot.sendMessage(user_id, 'No tienes un compañero.\nEscribe /search para encontrar un compañero.');
+		else return bot.sendMessage(user_id, `${Language.ERRROR_WITHOUT_PARTNER}\n${Language.FIND_PARTNER_MSG}`, {parse_mode : 'Markdown'});
 	}
 
 	if(userManager.exists(user_id)) {
@@ -86,7 +87,7 @@ bot.on('message', async (msg) => {
 
 		if(user.getState() == UserStats.STATE_CHATTING) {
 			if(msg.document) {
-				bot.sendMessage(user_id, '¡No puede enviar archivos!');
+				bot.sendMessage(user_id, Language.ERROR_SEND_FILE, {parse_mode : 'Markdown'});
 			}
 			else if (msg.sticker) { // Sticker
 				bot.sendSticker(user.getPartner(), msg.sticker.file_id);
@@ -137,4 +138,4 @@ bot.on('polling_error', (error) => {
 if (!fs.existsSync(Config.download_dir)){
     fs.mkdirSync(Config.download_dir);
 }
-console.log('[BOT_CHAT] Bot initialized successfully.');
+console.log(`[BOT_CHAT] ${Language.BOT_INITIALIZE}`);
